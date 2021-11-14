@@ -1,9 +1,9 @@
-from risks import Risks
+from .risks import RisksManager
 from random import random, choice
 
 
 def get_random_risks():
-    ret = Risks()
+    ret = RisksManager()
 
     values = []
     values.extend(ret.risks.sourses.T)
@@ -16,11 +16,11 @@ def get_random_risks():
     values.extend(ret.risks.accident.M)
     for obj in values:
         if choice([True, False]):
-            obj[1] = random()
+            obj.value = random()
         else:
-            obj[0] = False
+            obj.enabled = False
 
     return ret
 
 
-get_random_risks().print_risks()
+# get_random_risks().print_risks()
