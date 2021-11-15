@@ -12,6 +12,7 @@ class RiskManagerApp(tk.Tk):
     def __init__(self):
         tk.Tk.__init__(self)
         self.geometry('1500x750')
+        self.is_removal = None
         self.create_components()
         self.draw_components()
         self.risks = mock.get_random_risks()
@@ -36,13 +37,16 @@ class RiskManagerApp(tk.Tk):
         if tab == 'Identification':
             self.update_iditification_tables()
         if tab == 'Removal':
-            self.update_removal_tab()
+            if self.is_removal is None:
+                self.update_removal_tab()
+                self.is_removal = True
 
     def update_removal_tab(self):
-        frame = self.tab3.frame
+        tab = self.tab3
         src = self.get_risks_list()
-        for sourse in src:
-            pass
+        for sourse, id in src:
+           for j, risk in enumerate(sourse):
+               tab.add_row(f'{id}{j}', risk.descr)
 
     def update_iditification_tables(self):
         frame = self.tab1.frame

@@ -16,7 +16,7 @@ def get_random_risks():
     values.extend(ret.risks.accident.M)
     for obj in values:
         if choice([True, False]):
-            obj.value = random()
+            obj.value = [random() for i in range(10)]
         else:
             obj.enabled = False
 

@@ -3,6 +3,7 @@ class Risk:
         self.descr = descr_
         self.enabled = enabled_
         self.value = value_
+        self.removal = None
 
     def __str__(self):
         return f'{self.descr} - {self.value}'
