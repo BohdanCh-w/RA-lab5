@@ -17,6 +17,7 @@ def get_random_risks():
     for obj in values:
         if choice([True, False]):
             obj.value = [random() for i in range(10)]
+            obj.lrer = random()
         else:
             obj.enabled = False
 

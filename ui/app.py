@@ -1,9 +1,11 @@
 import tkinter as tk
 from tkinter import ttk
+from tkinter.constants import END
 from logic.names import *
 from logic.rand_risk import get_random_risks
 from .risk_id import RiskIdentification
 from .risk_rem import RiskRemoval
+from .risk_analisis import RiskAnalisis
 from logic import mock
 from helper.counter import Counter
 
@@ -12,7 +14,10 @@ class RiskManagerApp(tk.Tk):
     def __init__(self):
         tk.Tk.__init__(self)
         self.geometry('1500x750')
+
         self.is_removal = None
+        self.is_analisis = None
+
         self.create_components()
         self.draw_components()
         self.risks = mock.get_random_risks()
@@ -20,7 +25,7 @@ class RiskManagerApp(tk.Tk):
     def create_components(self):
         self.sections = ttk.Notebook(self)
         self.tab1 = RiskIdentification(self)
-        self.tab2 = RiskIdentification(self)
+        self.tab2 = RiskAnalisis(self)
         self.tab3 = RiskRemoval(self)
         self.tab4 = RiskIdentification(self)
         self.sections.add(self.tab1, text='Identification')
@@ -36,17 +41,64 @@ class RiskManagerApp(tk.Tk):
         tab = event.widget.tab('current')['text']
         if tab == 'Identification':
             self.update_iditification_tables()
+        if tab == 'Analisis':
+            if self.is_analisis is None:
+                self.update_analisis_tab()
+                self.is_analisis = True
         if tab == 'Removal':
             if self.is_removal is None:
                 self.update_removal_tab()
                 self.is_removal = True
 
+    def update_analisis_tab(self):
+        table = self.tab2.table
+        src = self.get_risks_list()
+        ct = Counter()
+
+        values = []
+        vrers = []
+        for sourse, id in src:
+            for j, risk in enumerate(sourse):
+                val = [f'{i:4.2f}' for i in risk.value]
+                avrg = sum(risk.value)/10
+                risk.vrer = risk.lrer * avrg
+                vrers.append(risk.vrer)
+                values.append(
+                    [f'{id}{j}', risk.descr, int(risk.enabled), *val,
+                     f'{avrg:4.2f}', f'{risk.lrer:4.2f}', f'{risk.vrer:4.2f}']
+                )
+
+        max_ = max(vrers)
+        min_ = min(vrers)
+        mpr = (max_ - min_) / 3
+
+        for sourse, id in src:
+            for j, risk in enumerate(sourse):
+                id = ct.next()
+                if vrers[id] < mpr:
+                    values[id].append('low')
+                elif vrers[id] < 2 * mpr:
+                    values[id].append('mid')
+                else:
+                    values[id].append('high')
+
+                table.insert(parent='', index=tk.END, iid=id, text='',
+                             values=values[id])
+        table.heading('descr', text='Ризикові події', anchor=tk.W)
+        table.heading('enabled', text='RP')
+        for i in range(10):
+            table.heading(f'ex{i}', text=f'Exp{i}')
+        table.heading('er', text='er')
+        table.heading('lrer', text='lrer')
+        table.heading('vrer', text='vrer')
+        table.heading('level', text='level')
+
     def update_removal_tab(self):
         tab = self.tab3
         src = self.get_risks_list()
         for sourse, id in src:
-           for j, risk in enumerate(sourse):
-               tab.add_row(f'{id}{j}', risk.descr)
+            for j, risk in enumerate(sourse):
+                tab.add_row(f'{id}{j}', risk.descr)
 
     def update_iditification_tables(self):
         frame = self.tab1.frame
