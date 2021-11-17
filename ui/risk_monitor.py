@@ -4,7 +4,7 @@ from logic import names
 from tkinter import font
 
 
-class RiskAnalisis(tk.Frame):
+class RiskMonitor(tk.Frame):
     def __init__(self, parent):
         tk.Frame.__init__(self, parent)
         self.configure(bg="#ffffff")
@@ -13,11 +13,11 @@ class RiskAnalisis(tk.Frame):
 
     def create_components(self):
         self.header = tk.Label(self, bg='#ffffff',
-                               text=names.risks_headers['risk_prob_head'],
+                               text=names.risks_headers['risk_mon_head'],
                                font=font.Font(size=20))
         self.table = ttk.Treeview(self, height=32)
         cols = ('id', 'descr', 'enabled', *[f'ex{i}' for i in range(10)],
-                'er', 'lrer', 'vrer', 'level')
+                'erper', 'elrer', 'evrer', 'level')
         self.table['columns'] = cols
         for col in cols:
             self.table.column(col, anchor=tk.CENTER, width=50)

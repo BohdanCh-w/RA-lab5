@@ -6,6 +6,7 @@ from logic.rand_risk import get_random_risks
 from .risk_id import RiskIdentification
 from .risk_rem import RiskRemoval
 from .risk_analisis import RiskAnalisis
+from .risk_monitor import RiskMonitor
 from logic import mock
 from helper.counter import Counter
 
@@ -27,11 +28,11 @@ class RiskManagerApp(tk.Tk):
         self.tab1 = RiskIdentification(self)
         self.tab2 = RiskAnalisis(self)
         self.tab3 = RiskRemoval(self)
-        self.tab4 = RiskIdentification(self)
+        self.tab4 = RiskMonitor(self)
         self.sections.add(self.tab1, text='Identification')
         self.sections.add(self.tab2, text='Analisis')
         self.sections.add(self.tab3, text='Removal')
-        self.sections.add(self.tab4, text='monitoring')
+        self.sections.add(self.tab4, text='Monitoring')
         self.sections.bind('<<NotebookTabChanged>>', self.on_tab_change)
 
     def draw_components(self):
@@ -42,16 +43,59 @@ class RiskManagerApp(tk.Tk):
         if tab == 'Identification':
             self.update_iditification_tables()
         if tab == 'Analisis':
-            if self.is_analisis is None:
-                self.update_analisis_tab()
-                self.is_analisis = True
+            self.update_analisis_tab()
         if tab == 'Removal':
-            if self.is_removal is None:
-                self.update_removal_tab()
-                self.is_removal = True
+            self.update_removal_tab()
+        if tab == 'Monitoring':
+            self.update_monitor_tab()
+
+    def update_monitor_tab(self):
+        table = self.tab4.table
+        table.delete(*table.get_children())
+        src = self.get_risks_list()
+        ct = Counter()
+
+        values = []
+        evrers = []
+        for sourse, id in src:
+            for j, risk in enumerate(sourse):
+                val = [f'{i:4.2f}' for i in risk.val_monitor]
+                avrg = sum(risk.val_monitor)/10
+                risk.evrer = risk.elrer * avrg
+                evrers.append(risk.evrer)
+                values.append(
+                    [f'{id}{j}', risk.descr, int(risk.enabled), *val,
+                     f'{avrg:4.2f}', f'{risk.elrer:4.2f}', f'{risk.evrer:4.2f}']
+                )
+
+        max_ = max(evrers)
+        min_ = min(evrers)
+        mpr = (max_ - min_) / 3
+
+        for sourse, id in src:
+            for j, risk in enumerate(sourse):
+                id = ct.next()
+                if evrers[id] < mpr:
+                    values[id].append('low')
+                elif evrers[id] < 2 * mpr:
+                    values[id].append('mid')
+                else:
+                    values[id].append('high')
+
+                table.insert(parent='', index=tk.END, iid=id, text='',
+                             values=values[id])
+        table.heading('descr', text='Ризикові події', anchor=tk.W)
+        table.heading('enabled', text='RP')
+        for i in range(10):
+            table.heading(f'ex{i}', text=f'Exp{i}')
+        table.heading('erper', text='erper')
+        table.heading('elrer', text='elrer')
+        table.heading('evrer', text='evrer')
+        table.heading('level', text='level')
 
     def update_analisis_tab(self):
         table = self.tab2.table
+        table.delete(*table.get_children())
         src = self.get_risks_list()
         ct = Counter()
 
@@ -120,10 +164,6 @@ class RiskManagerApp(tk.Tk):
 
     def get_risks_list(self):
         return [
-            (self.risks.risks.sourses.T, 'T'),
-            (self.risks.risks.sourses.C, 'C'),
-            (self.risks.risks.sourses.P, 'P'),
-            (self.risks.risks.sourses.M, 'M'),
             (self.risks.risks.accident.T, 'T'),
             (self.risks.risks.accident.C, 'C'),
             (self.risks.risks.accident.P, 'P'),
