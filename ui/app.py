@@ -1,12 +1,12 @@
 import tkinter as tk
 from tkinter import ttk
-from tkinter.constants import END
+from tkinter.messagebox import showerror
 from logic.names import *
-from logic.rand_risk import get_random_risks
 from .risk_id import RiskIdentification
 from .risk_rem import RiskRemoval
 from .risk_analisis import RiskAnalisis
 from .risk_monitor import RiskMonitor
+from .risk_change import RiskChange
 from logic import mock
 from helper.counter import Counter
 
@@ -29,10 +29,12 @@ class RiskManagerApp(tk.Tk):
         self.tab2 = RiskAnalisis(self)
         self.tab3 = RiskRemoval(self)
         self.tab4 = RiskMonitor(self)
+        self.tab5 = RiskChange(self)
         self.sections.add(self.tab1, text='Identification')
         self.sections.add(self.tab2, text='Analisis')
         self.sections.add(self.tab3, text='Removal')
         self.sections.add(self.tab4, text='Monitoring')
+        self.sections.add(self.tab5, text='Change')
         self.sections.bind('<<NotebookTabChanged>>', self.on_tab_change)
 
     def draw_components(self):
@@ -52,7 +54,7 @@ class RiskManagerApp(tk.Tk):
     def update_monitor_tab(self):
         table = self.tab4.table
         table.delete(*table.get_children())
-        src = self.get_risks_list()
+        src = self.get_risks_list()[4:]
         ct = Counter()
 
         values = []
@@ -96,7 +98,7 @@ class RiskManagerApp(tk.Tk):
     def update_analisis_tab(self):
         table = self.tab2.table
         table.delete(*table.get_children())
-        src = self.get_risks_list()
+        src = self.get_risks_list()[4:]
         ct = Counter()
 
         values = []
@@ -139,7 +141,7 @@ class RiskManagerApp(tk.Tk):
 
     def update_removal_tab(self):
         tab = self.tab3
-        src = self.get_risks_list()
+        src = self.get_risks_list()[4:]
         for sourse, id in src:
             for j, risk in enumerate(sourse):
                 tab.add_row(f'{id}{j}', risk.descr)
@@ -164,8 +166,19 @@ class RiskManagerApp(tk.Tk):
 
     def get_risks_list(self):
         return [
+            (self.risks.risks.sourses.T, 'T'),
+            (self.risks.risks.sourses.C, 'C'),
+            (self.risks.risks.sourses.P, 'P'),
+            (self.risks.risks.sourses.M, 'M'),
             (self.risks.risks.accident.T, 'T'),
             (self.risks.risks.accident.C, 'C'),
             (self.risks.risks.accident.P, 'P'),
             (self.risks.risks.accident.M, 'M')
         ]
+
+    def get_risk(self, type, group, num):
+        lst = self.risks.risks.sourses if type else self.risks.risks.accident
+        return getattr(lst, group)[num]
+
+    def report_callback_exception(self, exc, val, tb):
+        showerror("Error", message=str(val))

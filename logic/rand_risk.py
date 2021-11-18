@@ -16,10 +16,10 @@ def get_random_risks():
     values.extend(ret.risks.accident.M)
     for obj in values:
         if choice([True, False]):
-            obj.value = [random() for i in range(10)]
-            obj.val_monitor = [random() * el for el in obj.value]
-            obj.lrer = random()
-            obj.elrer = random()
+            obj.value = [round(random(), 3) for i in range(10)]
+            obj.val_monitor = [round(random() * el, 3) for el in obj.value]
+            obj.lrer = round(random(), 3)
+            obj.elrer = round(random(), 3)
         else:
             obj.enabled = False
 
